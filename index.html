@@ -278,39 +278,70 @@
         .accessory-card {
             background: var(--card-dark);
             border: 1px solid var(--border-line);
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: transform 0.2s;
+            transition: transform 0.25s, border-color 0.25s;
         }
 
         .accessory-card:hover {
             transform: translateY(-4px);
+            border-color: rgba(0, 136, 255, 0.4);
+        }
+
+        .card-img-box {
+            width: 100%;
+            height: 190px;
+            background: #080c10;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s;
+        }
+
+        .accessory-card:hover .card-img-box img {
+            transform: scale(1.05);
         }
 
         .item-badge {
-            align-self: flex-start;
+            position: absolute;
+            top: 12px;
+            left: 12px;
             font-size: 11px;
             font-weight: 700;
             padding: 4px 10px;
             border-radius: 6px;
-            margin-bottom: 12px;
+            backdrop-filter: blur(6px);
         }
 
         .badge-instock {
-            background: rgba(37, 211, 102, 0.15);
-            color: var(--accent-green);
+            background: rgba(37, 211, 102, 0.85);
+            color: #ffffff;
         }
 
         .badge-outofstock {
-            background: rgba(255, 75, 75, 0.15);
-            color: #ff4b4b;
+            background: rgba(255, 75, 75, 0.85);
+            color: #ffffff;
+        }
+
+        .card-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
         }
 
         .item-name {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             margin-bottom: 6px;
         }
@@ -319,13 +350,14 @@
             font-size: 13px;
             color: var(--text-muted);
             margin-bottom: 16px;
+            line-height: 1.4;
         }
 
         .item-price {
             font-size: 20px;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .btn-order-acc {
@@ -352,7 +384,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
             z-index: 200;
             justify-content: center;
@@ -382,6 +414,11 @@
             border-radius: 8px;
             color: #fff;
             margin-bottom: 14px;
+            outline: none;
+        }
+
+        .admin-form input:focus {
+            border-color: var(--accent-blue);
         }
 
         .btn-save {
@@ -393,6 +430,11 @@
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
         }
 
         /* Footer */
@@ -420,8 +462,8 @@
         <div class="container nav-wrapper">
             <a href="#" class="logo">Ranjith <span>Phone Repair</span></a>
             <div class="nav-actions">
-                <button class="btn-admin-login" onclick="openAdmin()">Admin Stock</button>
-                <a href="https://wa.me/94770000000" target="_blank" class="btn-whatsapp-header">
+                <button class="btn-admin-login" onclick="openAdmin()">⚙️ Admin Panel</button>
+                <a href="https://wa.me/94768880337" target="_blank" class="btn-whatsapp-header">
                     WhatsApp Chat ↗
                 </a>
             </div>
@@ -488,7 +530,7 @@
             </div>
 
             <div class="accessories-grid" id="accessoriesContainer">
-                <!-- Injected via JavaScript -->
+                <!-- Injected via JavaScript with Photos -->
             </div>
         </section>
     </main>
@@ -503,12 +545,13 @@
             <div class="admin-form" id="adminAuth">
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Enter owner passkey to manage stock:</p>
                 <input type="password" id="adminPass" placeholder="Enter PIN (Default: 1234)">
-                <button class="btn-save" onclick="verifyAdmin()">Login</button>
+                <button class="btn-save" onclick="verifyAdmin()">Login to Admin Panel</button>
             </div>
             <div class="admin-form" id="adminPanel" style="display: none;">
                 <p style="font-size: 13px; color: var(--accent-green); margin-bottom: 14px;">✓ Authenticated. Add new item to stock:</p>
                 <input type="text" id="newTitle" placeholder="Item Name (e.g. 20W Fast Charger)">
-                <input type="text" id="newDesc" placeholder="Description (e.g. Original Type-C)">
+                <input type="text" id="newDesc" placeholder="Description (e.g. Original Type-C PD)">
+                <input type="text" id="newImage" placeholder="Image URL (e.g. https://images.unsplash.com/...)">
                 <input type="number" id="newPrice" placeholder="Price in LKR (e.g. 2500)">
                 <input type="number" id="newStock" placeholder="Stock Quantity (e.g. 10)">
                 <button class="btn-save" onclick="addNewProduct()">Add Item to Shop</button>
@@ -519,7 +562,7 @@
     <footer>
         <div class="container">
             <p><strong>Ranjith Phone Repair Shop</strong> — Display, Mic, Charging Port Repairs & Accessories.</p>
-            <p style="margin-top: 8px;">Contact: +94 77 000 0000 | Open Monday – Saturday: 9:00 AM – 8:00 PM</p>
+            <p style="margin-top: 8px;">Contact: +94 76 888 0337 | Open Monday – Saturday: 9:00 AM – 8:00 PM</p>
         </div>
     </footer>
 
@@ -564,15 +607,44 @@
             }
         };
 
-        // Default Accessories Stock
+        // Default Accessories Stock With Real High-Quality Photos
         let defaultAccessories = [
-            { id: 1, name: "20W Fast Power Adapter", desc: "Original Type-C PD Quick Charger", price: 3200, stock: 14 },
-            { id: 2, name: "9D Curved Tempered Glass", desc: "Available for iPhone, Samsung & Redmi", price: 850, stock: 45 },
-            { id: 3, name: "Braided 6A Fast Charging Cable", desc: "Type-C / Lightning Durable Wire", price: 1200, stock: 8 },
-            { id: 4, name: "Deep Bass Earphones with Mic", desc: "3.5mm & Type-C Clean Audio", price: 1650, stock: 0 }
+            { 
+                id: 1, 
+                name: "20W Fast Power Adapter", 
+                desc: "Original Type-C PD Quick Charger for Apple & Android", 
+                image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=60",
+                price: 3200, 
+                stock: 14 
+            },
+            { 
+                id: 2, 
+                name: "9D Curved Tempered Glass", 
+                desc: "Edge-to-edge screen protection for iPhone, Samsung & Redmi", 
+                image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&auto=format&fit=crop&q=60",
+                price: 850, 
+                stock: 45 
+            },
+            { 
+                id: 3, 
+                name: "Braided Fast Charging Cable", 
+                desc: "Heavy duty unbreakable Type-C & Lightning wire", 
+                image: "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?w=500&auto=format&fit=crop&q=60",
+                price: 1200, 
+                stock: 8 
+            },
+            { 
+                id: 4, 
+                name: "Deep Bass In-Ear Earphones", 
+                desc: "Noise isolating crystal clear mic with 3.5mm & Type-C jack", 
+                image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&auto=format&fit=crop&q=60",
+                price: 1650, 
+                stock: 0 
+            }
         ];
 
-        let inventory = JSON.parse(localStorage.getItem('ranjith_inventory')) || defaultAccessories;
+        // Load existing inventory or default
+        let inventory = JSON.parse(localStorage.getItem('ranjith_inventory_v2')) || defaultAccessories;
 
         function updateModels() {
             const brand = document.getElementById('brandSelect').value;
@@ -598,7 +670,7 @@
                 document.getElementById('priceDisplay').textContent = "LKR " + price.toLocaleString();
 
                 // Format WhatsApp Message
-                const phoneNum = "94770000000"; // Shop WhatsApp Number
+                const phoneNum = "94768880337"; 
                 const issueName = document.getElementById('issueSelect').options[document.getElementById('issueSelect').selectedIndex].text;
                 const message = encodeURIComponent(`Hi Ranjith Phone Repair, I want to book a repair.\nBrand: ${brand.toUpperCase()}\nModel: ${model}\nIssue: ${issueName}\nEstimated Cost: LKR ${price.toLocaleString()}`);
                 document.getElementById('whatsappBookingBtn').href = `https://wa.me/${phoneNum}?text=${message}`;
@@ -614,18 +686,23 @@
                 const card = document.createElement('div');
                 card.className = 'accessory-card';
                 card.innerHTML = `
-                    <div>
+                    <div class="card-img-box">
+                        <img src="${item.image || 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=60'}" alt="${item.name}">
                         <div class="item-badge ${isAvailable ? 'badge-instock' : 'badge-outofstock'}">
                             ${isAvailable ? `In Stock (${item.stock})` : 'Out of Stock'}
                         </div>
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-desc">${item.desc}</div>
                     </div>
-                    <div>
-                        <div class="item-price">LKR ${item.price.toLocaleString()}</div>
-                        <a href="https://wa.me/94770000000?text=${encodeURIComponent('Hi, I want to buy: ' + item.name)}" target="_blank" class="btn-order-acc" style="display:block;">
-                            ${isAvailable ? 'Order on WhatsApp ↗' : 'Inquire on WhatsApp'}
-                        </a>
+                    <div class="card-body">
+                        <div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                        </div>
+                        <div>
+                            <div class="item-price">LKR ${item.price.toLocaleString()}</div>
+                            <a href="https://wa.me/94768880337?text=${encodeURIComponent('Hi, I want to buy: ' + item.name)}" target="_blank" class="btn-order-acc" style="display:block;">
+                                ${isAvailable ? 'Order on WhatsApp ↗' : 'Inquire on WhatsApp'}
+                            </a>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
@@ -637,26 +714,36 @@
         function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
         function verifyAdmin() {
             const pin = document.getElementById('adminPass').value;
-            if (pin === "1234") {
+            if (pin === "00001") {
                 document.getElementById('adminAuth').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
             } else {
-                alert("Wrong PIN!");
+                alert("Wrong PIN! Use default: 1234");
             }
         }
 
         function addNewProduct() {
             const title = document.getElementById('newTitle').value;
             const desc = document.getElementById('newDesc').value;
+            const image = document.getElementById('newImage').value;
             const price = parseInt(document.getElementById('newPrice').value);
             const stock = parseInt(document.getElementById('newStock').value);
 
             if (title && price) {
-                inventory.push({ id: Date.now(), name: title, desc: desc, price: price, stock: stock || 0 });
-                localStorage.setItem('ranjith_inventory', JSON.stringify(inventory));
+                inventory.push({ 
+                    id: Date.now(), 
+                    name: title, 
+                    desc: desc, 
+                    image: image || "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=60",
+                    price: price, 
+                    stock: stock || 0 
+                });
+                localStorage.setItem('ranjith_inventory_v2', JSON.stringify(inventory));
                 renderAccessories();
-                alert("New Product Added Successfully!");
+                alert("✓ New Product Added with Photo Successfully!");
                 closeAdmin();
+            } else {
+                alert("Please provide at least Title and Price.");
             }
         }
 
